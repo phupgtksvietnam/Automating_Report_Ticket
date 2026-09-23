@@ -1,0 +1,14 @@
+{
+  "name": "clickup-teams-reporter",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Fetch ClickUp tasks, categorize by due date / effort / tracking, post per-project reports to Microsoft Teams channels via Power Automate",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
