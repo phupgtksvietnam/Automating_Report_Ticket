@@ -9,8 +9,13 @@ export const PROJECTS = [
 
 // ClickUp Custom Task Types (task.custom_item_id) bị loại trừ hoàn toàn khỏi báo cáo.
 // Xác định qua GET /team/{team_id}/custom_item — trong workspace TKS-WS (90181980925):
-// 1 = Milestone, 1006 = Epic, 1007 = User Story (dùng để quản lý task con bên trong).
-export const EXCLUDED_CUSTOM_ITEM_IDS = [1, 1006, 1007];
+// 1 = Milestone, 1006 = Epic (luôn dùng để quản lý task con, loại trừ hoàn toàn).
+export const EXCLUDED_CUSTOM_ITEM_IDS = [1, 1006];
+
+// 1007 = User Story. Bình thường cũng dùng để quản lý task con bên trong nên loại trừ,
+// nhưng nếu User Story đó KHÔNG có task con nào (đang được dùng như 1 task thật) thì
+// vẫn tính vào báo cáo bình thường (xem hasSubtasks trong categorize.js).
+export const USER_STORY_CUSTOM_ITEM_ID = 1007;
 
 // Custom field dùng làm "công số" (effort dự kiến) và "tracking time" (effort thực tế).
 // Xác nhận qua dữ liệu thật: các List không dùng time_estimate/time_spent mặc định của ClickUp.

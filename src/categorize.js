@@ -1,5 +1,6 @@
 import {
   EXCLUDED_CUSTOM_ITEM_IDS,
+  USER_STORY_CUSTOM_ITEM_ID,
   EFFORT_FIELD_NAME,
   TRACKING_FIELD_NAME,
   FINISHED_STATUS_TYPES,
@@ -11,7 +12,12 @@ import { fetchCommentCount } from "./clickup.js";
 
 const TRACKING_CUTOFF_MS = new Date(TRACKING_MIN_DUE_DATE_ISO).getTime();
 
-function isExcludedType(task) {
+// User Story chỉ loại trừ khi nó THỰC SỰ có task con (đang dùng đúng vai trò container).
+// Không có task con nào thì coi như task bình thường, vẫn tính vào báo cáo.
+function isExcludedType(task, parentIds) {
+  if (task.custom_item_id === USER_STORY_CUSTOM_ITEM_ID) {
+    return parentIds.has(task.id);
+  }
   return EXCLUDED_CUSTOM_ITEM_IDS.includes(task.custom_item_id);
 }
 
@@ -35,6 +41,17 @@ function statusRequiresEffortCheck(task) {
 function vnDateKey(epochMs) {
   const shifted = new Date(epochMs + TIMEZONE_OFFSET_HOURS * 3600 * 1000);
   return `${shifted.getUTCFullYear()}-${shifted.getUTCMonth()}-${shifted.getUTCDate()}`;
+}
+
+// Mốc 00:00 giờ VN của ngày chứa epochMs, dùng để so sánh "trước/sau ngày" đúng theo
+// lịch thay vì theo mốc giờ chính xác (tránh task due hôm nay nhưng giờ đã trôi qua
+// bị tính nhầm thành "quá hạn").
+function vnStartOfDayMs(epochMs) {
+  const shifted = new Date(epochMs + TIMEZONE_OFFSET_HOURS * 3600 * 1000);
+  const y = shifted.getUTCFullYear();
+  const m = shifted.getUTCMonth();
+  const d = shifted.getUTCDate();
+  return Date.UTC(y, m, d) - TIMEZONE_OFFSET_HOURS * 3600 * 1000;
 }
 
 function getCustomFieldValue(task, fieldName) {
@@ -71,7 +88,8 @@ export async function categorizeTasks(tasks, clickupToken) {
   const now = Date.now();
   const todayKey = vnDateKey(now);
 
-  const relevant = tasks.filter((t) => !isExcludedType(t) && !isUntriaged(t));
+  const parentIds = new Set(tasks.filter((t) => t.parent).map((t) => t.parent));
+  const relevant = tasks.filter((t) => !isExcludedType(t, parentIds) && !isUntriaged(t));
 
   for (const task of relevant) {
     const finished = isFinished(task);
@@ -82,7 +100,7 @@ export async function categorizeTasks(tasks, clickupToken) {
     const missingTracking = needsEffortCheck && trackingApplies && isMissingTracking(task);
 
     if (dueDate) {
-      if (!finished && dueDate < now) result.overdue.push(task);
+      if (!finished && vnStartOfDayMs(dueDate) < vnStartOfDayMs(now)) result.overdue.push(task);
       if (vnDateKey(dueDate) === todayKey) result.dueToday.push(task);
     }
     if (missingEffort) result.missingEffort.push(task);

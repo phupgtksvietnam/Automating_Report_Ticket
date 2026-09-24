@@ -6,15 +6,16 @@ function escapeHtml(text) {
 }
 
 function taskLine(task) {
-  const url = task.url || `https://app.clickup.com/t/${task.id}`;
-  return `&nbsp;&nbsp;• ${escapeHtml(task.name)} — <a href="${url}">${url}</a>`;
+  const names = (task.assignees || []).map((a) => escapeHtml(a.username)).join(", ");
+  const suffix = names ? ` - ${names}` : "";
+  return `&nbsp;&nbsp;${escapeHtml(task.name)}${suffix}`;
 }
 
 function section(count, label, tasks) {
-  const lines = [`${count} task ${label}.`];
-  if (count > 0) {
-    lines.push(...tasks.map(taskLine));
+  if (count === 0) {
+    return `${count} task ${label}.`;
   }
+  const lines = [`${count} task ${label}:`, ...tasks.map(taskLine)];
   return lines.join("<br>");
 }
 
