@@ -7,8 +7,8 @@ import {
   EFFORT_CHECK_STATUS_NAME,
   TIMEZONE_OFFSET_HOURS,
   TRACKING_MIN_DUE_DATE_ISO,
+  OVERDUE_ELIGIBLE_STATUS_NAMES,
 } from "./config.js";
-import { fetchCommentCount } from "./clickup.js";
 
 const TRACKING_CUTOFF_MS = new Date(TRACKING_MIN_DUE_DATE_ISO).getTime();
 
@@ -33,9 +33,16 @@ function isFinished(task) {
   return FINISHED_STATUS_TYPES.includes(task.status?.type);
 }
 
-// Chỉ task có status literal "resolved" mới cần kiểm tra đủ công số/tracking/comment.
+// Chỉ task có status literal "resolved" mới cần kiểm tra đủ công số/tracking.
 function statusRequiresEffortCheck(task) {
   return task.status?.status?.trim().toLowerCase() === EFFORT_CHECK_STATUS_NAME;
+}
+
+// "Chậm due date" chỉ tính khi task đang ở status chưa làm/đang làm (to do, in progress) —
+// loại trừ cả status đã xong (done/closed) lẫn các status trung gian khác như "in review".
+function isOverdueEligibleStatus(task) {
+  const status = task.status?.status?.trim().toLowerCase();
+  return OVERDUE_ELIGIBLE_STATUS_NAMES.includes(status);
 }
 
 function vnDateKey(epochMs) {
@@ -76,7 +83,7 @@ function isMissingTracking(task) {
   return isEmptyFieldValue(getCustomFieldValue(task, TRACKING_FIELD_NAME));
 }
 
-export async function categorizeTasks(tasks, clickupToken) {
+export function categorizeTasks(tasks) {
   const result = {
     overdue: [],
     dueToday: [],
@@ -100,17 +107,16 @@ export async function categorizeTasks(tasks, clickupToken) {
     const missingTracking = needsEffortCheck && trackingApplies && isMissingTracking(task);
 
     if (dueDate) {
-      if (!finished && vnStartOfDayMs(dueDate) < vnStartOfDayMs(now)) result.overdue.push(task);
-      if (vnDateKey(dueDate) === todayKey) result.dueToday.push(task);
+      if (isOverdueEligibleStatus(task) && vnStartOfDayMs(dueDate) < vnStartOfDayMs(now)) {
+        result.overdue.push(task);
+      }
+      if (!finished && vnDateKey(dueDate) === todayKey) result.dueToday.push(task);
     }
     if (missingEffort) result.missingEffort.push(task);
     if (missingTracking) result.missingTracking.push(task);
 
-    if (needsEffortCheck) {
-      const commentCount = await fetchCommentCount(task.id, clickupToken);
-      if (commentCount === 0 || missingEffort || missingTracking) {
-        result.resolvedIncomplete.push(task);
-      }
+    if (needsEffortCheck && (missingEffort || missingTracking)) {
+      result.resolvedIncomplete.push(task);
     }
   }
 

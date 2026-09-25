@@ -35,4 +35,8 @@ export const EFFORT_CHECK_STATUS_NAME = "resolved";
 // Task due trước mốc này, hoặc không có due date, sẽ không bị tính vào category này.
 export const TRACKING_MIN_DUE_DATE_ISO = "2026-09-14T00:00:00+07:00";
 
+// Task chỉ được liệt vào "chậm due date" khi đang ở 1 trong các status này (chưa
+// làm xong và cũng chưa qua bước review) — vd "in review" quá hạn thì không tính.
+export const OVERDUE_ELIGIBLE_STATUS_NAMES = ["to do", "todo", "in progress"];
+
 export const TIMEZONE_OFFSET_HOURS = 7; // giờ Việt Nam (UTC+7)

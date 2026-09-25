@@ -29,8 +29,3 @@ export async function fetchAllTasksForList(listId, token) {
   }
   return tasks;
 }
-
-export async function fetchCommentCount(taskId, token) {
-  const data = await clickupRequest(`/task/${taskId}/comment`, token);
-  return (data.comments || []).length;
-}

@@ -7,7 +7,9 @@ function escapeHtml(text) {
 
 function taskLine(task) {
   const names = (task.assignees || []).map((a) => escapeHtml(a.username)).join(", ");
-  const suffix = names ? ` - ${names}` : "";
+  const status = task.status?.status ? escapeHtml(task.status.status) : "";
+  const suffixParts = [names, status].filter(Boolean);
+  const suffix = suffixParts.length ? ` - ${suffixParts.join(" - ")}` : "";
   return `&nbsp;&nbsp;${escapeHtml(task.name)}${suffix}`;
 }
 
@@ -28,7 +30,7 @@ export function formatProjectReport(projectName, categories) {
     section(dueToday.length, "due date hôm nay", dueToday),
     section(missingEffort.length, "thiếu công số", missingEffort),
     section(missingTracking.length, "thiếu tracking time", missingTracking),
-    section(resolvedIncomplete.length, "resolved thiếu comment/công số", resolvedIncomplete),
+    section(resolvedIncomplete.length, "resolved thiếu công số", resolvedIncomplete),
   ];
 
   return parts.join("<br>");

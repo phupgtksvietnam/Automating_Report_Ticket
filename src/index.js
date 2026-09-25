@@ -31,7 +31,7 @@ async function run() {
       const tasks = await fetchAllTasksForList(project.clickupListId, CLICKUP_TOKEN);
 
       console.log(`[${project.name}] Lấy được ${tasks.length} task, đang phân loại...`);
-      const categories = await categorizeTasks(tasks, CLICKUP_TOKEN);
+      const categories = categorizeTasks(tasks);
 
       const message = formatProjectReport(project.name, categories);
       console.log(`[${project.name}] Nội dung báo cáo:\n${message}\n`);
