@@ -1,6 +1,6 @@
 # ClickUp → Microsoft Teams Reporter
 
-Lấy task từ 4 dự án ClickUp, phân loại (quá hạn / due hôm nay / thiếu công số / thiếu tracking time / resolved thiếu comment-công số), và gửi báo cáo riêng vào 4 kênh Teams tương ứng — chạy tự động qua GitHub Actions, 9:30 và 16:00 giờ VN, Thứ 2 - Thứ 6.
+Lấy task từ 4 dự án ClickUp, phân loại (quá hạn / due hôm nay / thiếu công số / thiếu tracking time / resolved thiếu comment-công số), và gửi báo cáo riêng vào 4 kênh Teams tương ứng — chạy tự động qua GitHub Actions, ~9:23 sáng và ~15:47 chiều giờ VN, Thứ 2 - Thứ 6.
 
 ## 1. Danh sách dự án / List ID ClickUp
 
@@ -76,4 +76,4 @@ Vào tab **Actions** → chọn workflow **ClickUp Teams Report** → **Run work
 
 ## Lịch chạy
 
-9:30 sáng và 16:00 chiều giờ Việt Nam, Thứ 2 - Thứ 6 (`.github/workflows/report.yml`). GitHub tự tắt scheduled workflow nếu repo không có hoạt động trong 60 ngày — khi đó cần vào tab Actions bật lại thủ công.
+~9:23 sáng và ~15:47 chiều giờ Việt Nam, Thứ 2 - Thứ 6 (`.github/workflows/report.yml`). Giờ cron cố tình đặt lệch phút tròn (không phải `:00`/`:30`) vì GitHub Actions hay bị nghẽn tải và delay đúng vào các mốc giờ tròn — đặt lệch giúp giảm khả năng bị trễ, nhưng vẫn không đảm bảo chạy đúng y giờ 100%. GitHub tự tắt scheduled workflow nếu repo không có hoạt động trong 60 ngày — khi đó cần vào tab Actions bật lại thủ công.
